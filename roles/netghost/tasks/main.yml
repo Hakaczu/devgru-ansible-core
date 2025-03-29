@@ -1,0 +1,38 @@
+---
+# tasks file for netghost
+
+- name: Ensure user netghost exists
+  user:
+    name: netghost
+    shell: /bin/bash
+    groups: sudo
+    append: yes
+    state: present
+    create_home: yes
+  tags:
+    - user-setup
+
+- name: Check if public key file exists
+  stat:
+    path: files/netghost.pub
+  register: netghost_pub_key
+  tags:
+    - key-setup
+
+- name: Set authorized key for netghost
+  authorized_key:
+    user: netghost
+    state: present
+    key: "{{ lookup('file', 'files/netghost.pub') }}"
+  when: netghost_pub_key.stat.exists
+  tags:
+    - key-setup
+
+- name: Ensure sudoers entry for netghost (no password)
+  lineinfile:
+    path: /etc/sudoers.d/netghost
+    create: yes
+    line: "netghost ALL=(ALL) NOPASSWD:ALL"
+    mode: '0440'
+  tags:
+    - sudo-setup

@@ -1,0 +1,75 @@
+# tasks file for docker
+
+- name: Install Docker CE dependencies
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    state: present
+    update_cache: yes
+
+- name: Add Docker’s official GPG key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker CE repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename | default(ansible_distribution_release | lower) }} stable"
+    state: present
+    filename: docker
+
+- name: Install Docker CE and CLI
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: latest
+    update_cache: yes
+
+- name: Install Docker Compose plugin
+  apt:
+    name: docker-compose-plugin
+    state: latest
+
+- name: Enable and start Docker service
+  systemd:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Add user to docker group
+  user:
+    name: "{{ ansible_user | default('netghost') }}"
+    groups: docker
+    append: yes
+
+- name: Install dependencies for LazyDocker
+  apt:
+    name:
+      - curl
+      - unzip
+    state: present
+    update_cache: yes
+
+- name: Download LazyDocker
+  get_url:
+    url: https://github.com/jesseduffield/lazydocker/releases/latest/download/lazydocker_amd64.zip
+    dest: /tmp/lazydocker.zip
+
+- name: Unzip LazyDocker
+  unarchive:
+    src: /tmp/lazydocker.zip
+    dest: /usr/local/bin/
+    remote_src: yes
+    mode: '0755'
+
+- name: Ensure LazyDocker is executable
+  file:
+    path: /usr/local/bin/lazydocker
+    mode: '0755'
+    state: file
