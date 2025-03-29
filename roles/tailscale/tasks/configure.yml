@@ -1,0 +1,27 @@
+---
+# Configuration and authentication tasks for Tailscale
+
+- name: Check if Tailscale is already authenticated
+  command: tailscale status
+  register: tailscale_status
+  changed_when: false
+  failed_when: false
+  check_mode: no
+
+- name: Authenticate Tailscale using API key
+  command: >
+    tailscale up --authkey={{ tailscale_auth_key }} {{ tailscale_extra_flags }}
+  no_log: true  # Hide the auth key from logs
+  register: tailscale_auth_result
+  changed_when: tailscale_auth_result.rc == 0
+  failed_when: tailscale_auth_result.rc != 0 and "already authenticated" not in tailscale_auth_result.stderr
+  when: 
+    - tailscale_status.rc != 0 or "Logged out" in tailscale_status.stdout
+    - tailscale_auth_key is defined and tailscale_auth_key | length > 0
+
+- name: Display Tailscale status after authentication
+  command: tailscale status
+  register: tailscale_status_after
+  changed_when: false
+  check_mode: no
+  when: tailscale_auth_result is changed

@@ -1,28 +1,42 @@
 ---
+# Main tasks file for Forgejo role
+# This role deploys Forgejo (Git service) in Docker containers
+
+# Check for Docker dependency first
 - name: Check if Docker is installed
   command: which docker
   register: docker_command_result
   changed_when: false
   failed_when: false
   check_mode: no
+  tags: [forgejo, dependency]
 
 - name: Ensure Docker is installed
   fail:
     msg: "The 'forgejo' role requires Docker to be installed. Please run the 'docker' role first."
   when: docker_command_result.rc != 0
+  tags: [forgejo, dependency]
   
+# Prepare directory structure
 - name: Create directory for Forgejo container
   file:
     path: "{{ forgejo_path }}"
     state: directory
     mode: '0755'
+  tags: [forgejo, setup]
 
+# Deploy docker-compose configuration file
 - name: Copy docker-compose.yml file for Forgejo
   template:
     src: docker-compose.yml.j2
     dest: "{{ forgejo_path }}/docker-compose.yml"
     mode: '0644'
+  register: compose_template
+  tags: [forgejo, config]
 
+# Start Forgejo container
 - name: Start Forgejo container
   community.docker.docker_compose:
     project_src: "{{ forgejo_path }}"
+    state: present
+  tags: [forgejo, service]

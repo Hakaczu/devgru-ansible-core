@@ -1,18 +1,20 @@
 # LazyDocker installation tasks
-
-# Check if LazyDocker is already installed
+---
+# Check LazyDocker installation status to maintain idempotency
 - name: Check if LazyDocker is already installed
   command: which lazydocker
   register: lazydocker_exists
   changed_when: false
   failed_when: false
   check_mode: no
+  tags: [lazydocker]
 
 - name: Set fact about LazyDocker installation status
   set_fact:
     lazydocker_is_installed: "{{ lazydocker_exists.rc == 0 }}"
+  tags: [lazydocker]
 
-# The following tasks only run if LazyDocker is not installed
+# Install dependencies only if LazyDocker is not installed
 - name: Install dependencies for LazyDocker
   apt:
     name:
@@ -21,12 +23,15 @@
     state: present
     update_cache: yes
   when: not lazydocker_is_installed
+  tags: [lazydocker, dependencies]
 
 - name: Download LazyDocker
   get_url:
     url: https://github.com/jesseduffield/lazydocker/releases/latest/download/lazydocker_amd64.zip
     dest: /tmp/lazydocker.zip
+    mode: '0644'
   when: not lazydocker_is_installed
+  tags: [lazydocker, download]
 
 - name: Unzip LazyDocker
   unarchive:
@@ -35,6 +40,7 @@
     remote_src: yes
     mode: '0755'
   when: not lazydocker_is_installed
+  tags: [lazydocker, install]
 
 - name: Ensure LazyDocker is executable
   file:
@@ -42,10 +48,12 @@
     mode: '0755'
     state: file
   when: not lazydocker_is_installed
+  tags: [lazydocker, permissions]
 
-# Cleanup after installation
+# Clean up downloaded artifacts
 - name: Cleanup LazyDocker installation files
   file:
     path: /tmp/lazydocker.zip
     state: absent
   when: not lazydocker_is_installed
+  tags: [lazydocker, cleanup]

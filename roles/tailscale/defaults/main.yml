@@ -1,0 +1,20 @@
+---
+# Default variables for Tailscale role
+
+# Path for Tailscale configuration
+tailscale_path: "/etc/tailscale"
+
+# Whether to authenticate immediately after installation
+tailscale_auth_enabled: true
+
+# Default Tailscale options 
+# --authkey is set from tailscale_auth_key which should be provided as a secret
+# --hostname is the machine's hostname by default
+tailscale_extra_flags: ""
+
+# Access controls
+tailscale_become: true
+tailscale_become_user: root
+
+# Package version - empty means latest
+tailscale_package_version: ""

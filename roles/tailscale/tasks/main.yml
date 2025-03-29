@@ -1,0 +1,13 @@
+---
+# Main tasks file for Tailscale role
+
+- name: Install Tailscale
+  import_tasks: install.yml
+  become: "{{ tailscale_become }}"
+  become_user: "{{ tailscale_become_user }}"
+
+- name: Configure and authenticate Tailscale
+  import_tasks: configure.yml
+  become: "{{ tailscale_become }}"
+  become_user: "{{ tailscale_become_user }}"
+  when: tailscale_auth_enabled | bool

@@ -1,4 +1,14 @@
 ---
+# Default variables for Forgejo role
+
+# Path where Forgejo container configuration will be stored
 forgejo_path: /opt/containers/forgejo
+
+# HTTP port to expose Forgejo web interface (host:3000)
 forgejo_port_http: 3000
+
+# SSH port for Git operations (host:22)
 forgejo_port_ssh: 2222
+
+# Optional: Forgejo version to install (default: latest)
+# forgejo_version: latest

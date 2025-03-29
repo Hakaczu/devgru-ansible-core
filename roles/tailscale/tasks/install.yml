@@ -1,0 +1,77 @@
+---
+# Installation tasks for Tailscale
+
+- name: Check if Tailscale is installed
+  command: which tailscale
+  register: tailscale_command_result
+  changed_when: false
+  failed_when: false
+  check_mode: no
+
+- name: Add Tailscale GPG key (Debian/Ubuntu)
+  apt_key:
+    url: https://pkgs.tailscale.com/stable/debian/buster.gpg
+    state: present
+  when: 
+    - tailscale_command_result.rc != 0
+    - ansible_os_family == "Debian"
+
+- name: Add Tailscale repository (Debian/Ubuntu)
+  apt_repository:
+    repo: "deb https://pkgs.tailscale.com/stable/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main"
+    state: present
+    filename: tailscale
+  when: 
+    - tailscale_command_result.rc != 0
+    - ansible_os_family == "Debian"
+
+- name: Add Tailscale repository (RHEL/CentOS/Fedora)
+  yum_repository:
+    name: tailscale
+    description: Tailscale stable repository
+    baseurl: https://pkgs.tailscale.com/stable/rhel/$releasever/$basearch
+    gpgcheck: yes
+    gpgkey: https://pkgs.tailscale.com/stable/rhel/repo.gpg
+  when: 
+    - tailscale_command_result.rc != 0
+    - ansible_os_family == "RedHat"
+
+- name: Install Tailscale package (macOS)
+  homebrew_cask:
+    name: tailscale
+    state: present
+    version: "{{ tailscale_package_version | default(omit) }}"
+  when: 
+    - tailscale_command_result.rc != 0
+    - ansible_os_family == "Darwin"
+
+- name: Install Tailscale package (Debian/Ubuntu)
+  apt:
+    name: "tailscale{{ (tailscale_package_version | length > 0) | ternary('=' + tailscale_package_version, '') }}"
+    state: present
+    update_cache: yes
+  when:
+    - tailscale_command_result.rc != 0
+    - ansible_os_family == "Debian"
+
+- name: Install Tailscale package (RHEL/CentOS/Fedora)
+  package:
+    name: "tailscale{{ (tailscale_package_version | length > 0) | ternary('-' + tailscale_package_version, '') }}"
+    state: present
+  when:
+    - tailscale_command_result.rc != 0
+    - ansible_os_family == "RedHat"
+
+- name: Enable and start Tailscale service
+  systemd:
+    name: tailscaled
+    enabled: yes
+    state: started
+  when: 
+    - ansible_os_family != "Darwin"
+
+- name: Create Tailscale configuration directory
+  file:
+    path: "{{ tailscale_path }}"
+    state: directory
+    mode: '0755'

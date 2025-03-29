@@ -1,10 +1,14 @@
-# tasks file for docker
+---
+# Main tasks file for Docker role
+# This role installs Docker CE and optionally LazyDocker
 
 # Include Docker installation tasks
 - name: Install Docker
   import_tasks: docker.yml
+  tags: [docker]
 
 # Conditionally include LazyDocker installation tasks
 - name: Install LazyDocker
   import_tasks: lazydocker.yml
   when: install_lazydocker | bool
+  tags: [lazydocker]
