@@ -1,0 +1,4 @@
+# Default variables for Docker role
+
+# Whether to install LazyDocker
+install_lazydocker: true

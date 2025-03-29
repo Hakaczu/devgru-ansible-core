@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+    forgejo:
+        image: codeberg.org/forgejo/forgejo:latest
+        container_name: forgejo
+        ports:
+            - "{{ forgejo_port_http }}:3000"
+            - "{{ forgejo_port_ssh }}:22"
+        volumes:
+            - forgejo_data:/data
+        restart: unless-stopped
+
+volumes:
+    forgejo_data:

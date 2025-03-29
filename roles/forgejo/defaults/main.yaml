@@ -1,0 +1,4 @@
+---
+forgejo_path: /opt/containers/forgejo
+forgejo_port_http: 3000
+forgejo_port_ssh: 2222
