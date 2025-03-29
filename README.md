@@ -22,7 +22,6 @@ To include this repository as a submodule in your project, run the following com
 
 ```bash
 git submodule add https://github.com/devgru/devgru-ansible-core.git ansible/roles
-make init
 ```
 
 ### Using Roles
